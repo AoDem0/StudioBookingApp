@@ -1,0 +1,12 @@
+{
+    "admin": {
+        "password": "b87d0e533955a1576c8e2a7051fd81cc$a2b90f0c68b613628740923f253283e5ff1299eaa172c514319cba85ee02b166",
+        "role": "admin",
+        "rooms_to_manage": []
+    },
+    "alex": {
+        "password": "e39e78643b88bbc8d87a6bad2b1efa20$36b9e3dd5ee105da69b8c745d4931e5827f79540dcb09520a2e5521f073fa0ec",
+        "role": "client",
+        "rooms_to_manage": []
+    }
+}
