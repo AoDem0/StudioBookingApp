@@ -1,0 +1,27 @@
+{
+    "admin": {
+        "password": "b87d0e533955a1576c8e2a7051fd81cc$a2b90f0c68b613628740923f253283e5ff1299eaa172c514319cba85ee02b166",
+        "role": "admin",
+        "rooms_to_manage": []
+    },
+    "alex": {
+        "password": "e39e78643b88bbc8d87a6bad2b1efa20$36b9e3dd5ee105da69b8c745d4931e5827f79540dcb09520a2e5521f073fa0ec",
+        "role": "client",
+        "rooms_to_manage": []
+    },
+    "demo": {
+        "password": "ecde281dcba138159d44d2dbd2542f3e$3046ff38456db925d8a87eb97e9e351c9ec08c234832680f8850cad510057a77",
+        "role": "client",
+        "rooms_to_manage": []
+    },
+    "kowal": {
+        "password": "eae495160036f2c99c75734d4a9089c9$805180cf9662c690975b42d335866ee47e55c3c146f32cff29395dcd558e665a",
+        "role": "employee",
+        "rooms_to_manage": []
+    },
+    "nowak": {
+        "password": "13a06580b5126cb873d4ba721387c233$495c8c727672282c9a211d6bb85712f6eec6cb45c8057aeb1e12f583f8dca396",
+        "role": "employee",
+        "rooms_to_manage": []
+    }
+}
