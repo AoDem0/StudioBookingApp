@@ -1,12 +1,14 @@
 import tkinter as tk
 from tkinter import messagebox, ttk, simpledialog
 import Studios_Data_Man as sdm
+import Bookings_Data_Man as bdm
 import User_Views as uv
 
 class AdminView(uv.View):
     def __init__(self, master, app, database, username):
         super().__init__(master, app, database, username)
         self.dataMAn = sdm.Studio_Data()
+        self.bookingMan = bdm.Booking_Data()
         self.build_admin_nav()
         self.build_profile_screen()
     #-------------edit-employees----------------------
@@ -53,7 +55,7 @@ class AdminView(uv.View):
 
         # Pierwsze wczytanie danych
         self.refresh_employees()
-#nie dziala na razie
+
     def refresh_employees(self):
         for i in self.users_tree.get_children():
             self.users_tree.delete(i)
@@ -75,7 +77,7 @@ class AdminView(uv.View):
 
         if self.database.register_user(login, password, role):
             messagebox.showinfo("Sukces", "Konto utworzone!")
-            
+            self.refresh_employees()
         else:
             messagebox.showerror("Błąd", "Użytkownik już istnieje!")
 
@@ -83,7 +85,7 @@ class AdminView(uv.View):
         login = simpledialog.askstring("Usuwanie","Nazwa użytkownika:")
         if self.database.delete_user(login):
             messagebox.showinfo("Sukces", "Konto usunięte!")
-            
+            self.refresh_employees()
         else:
             messagebox.showerror("Błąd", "Użytkownik nie znaleziony!")
 
@@ -101,6 +103,7 @@ class AdminView(uv.View):
                 if self.database.register_user(login1, password, role='employee'):
                     messagebox.showinfo("Sukces", "Konto zmienione!")
                     self.database.delete_user(login0)
+                    self.refresh_employees()
                 else:
                     messagebox.showerror("Błąd", "Użytkownik o nowej nazwie już istnieje!")
                 return
@@ -170,7 +173,7 @@ class AdminView(uv.View):
 
         if self.dataMAn.register_studio(id, name, city, price):
             messagebox.showinfo("Sukces", "Studio utworzone!")
-            
+            self.refresh_studios()
         else:
             messagebox.showerror("Błąd", "Studio już istnieje!")
 
@@ -181,13 +184,13 @@ class AdminView(uv.View):
         id_int = int(id)
         if self.dataMAn.remove_studio(id_int):
             messagebox.showinfo("Sukces", "Studio usunięte!")
-            
+            self.refresh_studios()
         else:
             messagebox.showerror("Błąd", "Studio nie znalezione!")
 
     def edit_studio(self):
         id0 = simpledialog.askstring("Edytuj studio","ID studia:")
-        if not id: return
+        if not id0: return
         
         id_int = int(id0)
 
@@ -205,14 +208,15 @@ class AdminView(uv.View):
                 id1 = self.dataMAn.next_id()
 
                 if self.dataMAn.register_studio(id1, name, city, price):
-                    messagebox.showinfo("Sukces", "Konto zmienione!")
+                    messagebox.showinfo("Sukces", "Studio zmienione!")
                     self.dataMAn.remove_studio(id_int)
+                    self.refresh_studios()
                 else:
-                    messagebox.showerror("Błąd", "Użytkownik o nowej nazwie już istnieje!")
-                return  # wychodzimy z funkcji po edycji
+                    messagebox.showerror("Błąd", "Studio o nowej nazwie już istnieje!")
+                return
 
         # jeśli pętla się zakończyła i nic nie znaleziono
-        messagebox.showerror("Błąd", "Użytkownik nie znaleziony!")
+        messagebox.showerror("Błąd", "Studio nie znalezione!")
     #-------------edit-reservations----------------------
     def build_reservation_manage_screen(self):
         self.clear_view()
@@ -223,26 +227,108 @@ class AdminView(uv.View):
         row2.pack(fill="x")
 
         ttk.Label(row2, text="Rezerwacje").pack(side="left", padx=5, pady=10)
-        ttk.Button(row2, text="Edytuj rezerwację").pack(side="left", padx=5, pady=10)
-        ttk.Button(row2, text="Usuń rezerwację").pack(side="left", padx=5, pady=10)
-        ttk.Button(row2, text="Zatwierdź rezerwację").pack(side="left", padx=5, pady=10)
+        ttk.Button(row2, text="Edytuj rezerwację", command=self.edit_reservation).pack(side="left", padx=5, pady=10)
+        ttk.Button(row2, text="Usuń rezerwację", command=self.remove_reservation).pack(side="left", padx=5, pady=10)
+        ttk.Button(row2, text="Zatwierdź rezerwację", command=self.approve_reservation).pack(side="left", padx=5, pady=10)
 
         ttk.Separator(self.current_view, orient=tk.HORIZONTAL).pack(fill="x", pady=10)
-        ttk.Label(self.current_view, text="Lista sal (wszystkie)").pack(anchor="w", padx=5)
+        ttk.Label(self.current_view, text="Lista rezerwacji (wszystkie)").pack(anchor="w", padx=5)
+        
         list_frame = tk.Frame(self.current_view)
         list_frame.pack(fill="both", expand=True, padx=5, pady=(5,0))
-        cols = ("id","name","city","owner","capacity","equipment")
-        self.admin_rooms_tree = ttk.Treeview(list_frame, columns=cols, show="headings", height=8)
+        cols = ("id", "studio_id", "studio_name", "username", "date", "time_from", "time_to", "status")
+        self.reservations_tree = ttk.Treeview(list_frame, columns=cols, show="headings", height=8)
         for c in cols:
-            self.admin_rooms_tree.heading(c, text=c)
-        vsb = ttk.Scrollbar(list_frame, orient="vertical", command=self.admin_rooms_tree.yview)
-        self.admin_rooms_tree.configure(yscrollcommand=vsb.set)
+            self.reservations_tree.heading(c, text=c)
+        vsb = ttk.Scrollbar(list_frame, orient="vertical", command=self.reservations_tree.yview)
+        self.reservations_tree.configure(yscrollcommand=vsb.set)
         vsb.pack(side="right", fill="y")
-        self.admin_rooms_tree.pack(side="left", fill="both", expand=True)
+        self.reservations_tree.pack(side="left", fill="both", expand=True)
+        
         btn_frame = tk.Frame(self.current_view)
         btn_frame.pack(fill="x", pady=6, padx=5)
-        ttk.Button(btn_frame, text="Odśwież listę sal").pack(side="left")
- 
+        ttk.Button(btn_frame, text="Odśwież listę rezerwacji", command=self.refresh_reservations).pack(side="left")
+
+        # Pierwsze wczytanie danych
+        self.refresh_reservations()
+
+    def refresh_reservations(self):
+        # Czyści tabelę
+        for i in self.reservations_tree.get_children():
+            self.reservations_tree.delete(i)
+
+        # Wczytuje dane z JSON
+        data = self.database.load_data()
+        reservations = data.get("reservations", [])
+        studios = data.get("studios", [])
+        
+        # Tworzymy mapę studio_id -> studio_name
+        studio_map = {s["id"]: s["name"] for s in studios}
+        
+        for r in reservations:
+            studio_name = studio_map.get(r.get("studio_id"), "Unknown")
+            self.reservations_tree.insert("", "end", values=(
+                r.get("id", ""),
+                r.get("studio_id", ""),
+                studio_name,
+                r.get("username", ""),
+                r.get("date", ""),
+                r.get("time_from", ""),
+                r.get("time_to", ""),
+                r.get("status", "")
+            ))
+
+    def edit_reservation(self):
+        selected = self.reservations_tree.selection()
+        if not selected:
+            messagebox.showwarning("Uwaga", "Wybierz rezerwację do edycji!")
+            return
+        
+        item = self.reservations_tree.item(selected[0])
+        reservation_id = int(item['values'][0])
+        
+        date = simpledialog.askstring("Edycja", "Nowa data (DD-MM-YYYY):")
+        time_from = simpledialog.askstring("Edycja", "Nowa godzina rozpoczęcia (HH:MM):")
+        time_to = simpledialog.askstring("Edycja", "Nowa godzina zakończenia (HH:MM):")
+        
+        if self.bookingMan.update_reservation(reservation_id, date, time_from, time_to):
+            messagebox.showinfo("Sukces", "Rezerwacja zaktualizowana!")
+            self.refresh_reservations()
+        else:
+            messagebox.showerror("Błąd", "Nie udało się zaktualizować rezerwacji!")
+
+    def remove_reservation(self):
+        selected = self.reservations_tree.selection()
+        if not selected:
+            messagebox.showwarning("Uwaga", "Wybierz rezerwację do usunięcia!")
+            return
+        
+        item = self.reservations_tree.item(selected[0])
+        reservation_id = int(item['values'][0])
+        
+        confirm = messagebox.askyesno("Potwierdzenie", "Czy na pewno chcesz usunąć tę rezerwację?")
+        if confirm:
+            if self.bookingMan.remove_reservation(reservation_id):
+                messagebox.showinfo("Sukces", "Rezerwacja usunięta!")
+                self.refresh_reservations()
+            else:
+                messagebox.showerror("Błąd", "Nie udało się usunąć rezerwacji!")
+
+    def approve_reservation(self):
+        selected = self.reservations_tree.selection()
+        if not selected:
+            messagebox.showwarning("Uwaga", "Wybierz rezerwację do zatwierdzenia!")
+            return
+        
+        item = self.reservations_tree.item(selected[0])
+        reservation_id = int(item['values'][0])
+        
+        if self.bookingMan.update_reservation_status(reservation_id, "approved"):
+            messagebox.showinfo("Sukces", "Rezerwacja zatwierdzona!")
+            self.refresh_reservations()
+        else:
+            messagebox.showerror("Błąd", "Nie udało się zatwierdzić rezerwacji!")
+
     def build_admin_nav(self):
         self.nav = tk.Frame(self, height=60)
         self.nav.pack(side="top", fill="x")

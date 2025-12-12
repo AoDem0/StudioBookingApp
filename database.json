@@ -1,0 +1,28 @@
+{
+    "users": [
+        {
+            "username": "admin",
+            "password_hash": "51a1d997267d8f4d517f107e7d0678be$d4624ffc31fe76569e44def9a81f40fef7e89bf3cd8a53e2fa5696a7a4566404",
+            "role": "admin",
+            "managed_rooms": []
+        },
+        {
+            "username": "pepe",
+            "password_hash": "8818017a7f7138eb1b6cb09afcd7c8c8$8751d8d0086d485a6f5e0764f7e6334239dbce67690e07a31fb572fbff7f1373",
+            "role": "client",
+            "managed_rooms": []
+        }
+    ],
+    "studios": [],
+    "reservations": [
+        {
+            "id": 1,
+            "studio_id": 0,
+            "username": "meow",
+            "date": "25-05-2052",
+            "time_from": "15:50",
+            "time_to": "16:50",
+            "status": "approved"
+        }
+    ]
+}

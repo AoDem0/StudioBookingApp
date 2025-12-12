@@ -19,7 +19,26 @@
             "name": "Crazy Beats",
             "city": "krakow",
             "price_for_h": "2000",
-            "equipment": []
+            "equipment": ["piano"]
+        }
+    ],
+
+    "reservations": [
+        {
+            "id": 1,
+            "name": "Crazy Beats",
+            "city": "krakow",
+            "owner": "greg",
+            "capacity": 4,
+            "equipment": ["mic"]
+        },
+        {
+            "id": 2,
+            "name": "Bass Cave",
+            "city": "warszawa",
+            "owner": "nowak",
+            "capacity": 2,
+            "equipment": ["mixer"]
         }
     ]
 }
