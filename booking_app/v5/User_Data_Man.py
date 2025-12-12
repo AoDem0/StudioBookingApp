@@ -57,13 +57,34 @@ class User_Data(dm.Database_Management):
             if user["username"] == username:
                 return user.get("role")
         return None
-
-    def get_rooms(self, username):
+    def get_user_rooms(self, username):
         data = self.load_data()
         for user in data.get("users", []):
             if user["username"] == username:
                 return user.get("managed_rooms", [])
         return []
+    
+    def add_user_rooms(self, username, id):
+        data = self.load_data()
+        for user in data.get("users", []):
+            if user["username"] == username:
+                if id not in user["managed_rooms"]:
+                    user["managed_rooms"].append(id)
+                    self.save_data(data)
+                    return True
+    
+    def remove_user_rooms(self, username, id):
+        data = self.load_data()
+        for user in data.get("users", []):
+            if user["username"] == username:
+                if id in user["managed_rooms"]:
+                    user["managed_rooms"].remove(id)
+                    self.save_data(data)
+                    return True
+
+
+
+
 
     def initial_data(self):
         data = self.load_data()

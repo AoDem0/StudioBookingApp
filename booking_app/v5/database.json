@@ -15,14 +15,19 @@
     ],
     "studios": [
         {
-            "id": 1,
-            "name": "Crazy Beats",
-            "city": "krakow",
-            "price_for_h": "2000",
-            "equipment": ["piano"]
+            "id": 0,
+            "name": "CStudio",
+            "city": "wroclaw",
+            "price_for_h": "100",
+            "equipment": [
+                {
+                    "name": "mikrofon",
+                    "used": 0,
+                    "total": 10
+                }
+            ]
         }
     ],
-
     "reservations": [
         {
             "id": 1,
@@ -30,7 +35,9 @@
             "city": "krakow",
             "owner": "greg",
             "capacity": 4,
-            "equipment": ["mic"]
+            "equipment": [
+                "mic"
+            ]
         },
         {
             "id": 2,
@@ -38,7 +45,9 @@
             "city": "warszawa",
             "owner": "nowak",
             "capacity": 2,
-            "equipment": ["mixer"]
+            "equipment": [
+                "mixer"
+            ]
         }
     ]
 }

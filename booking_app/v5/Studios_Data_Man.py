@@ -42,3 +42,26 @@ class Studio_Data(dm.Database_Management):
             return 0
         max_id = max([s["id"] for s in data["studios"]], default=-1)
         return max_id + 1
+    
+    def add_equipment(self, studio_id, name, used, total):
+        data = self.load_data()
+        studio = next((s for s in data["studios"] if s["id"] == studio_id), None)
+        if not studio:
+            return False
+
+        if any(item["name"] == name for item in studio["equipment"]):
+            return False
+
+        studio["equipment"].append({
+            "name": name,
+            "used": used,
+            "total": total
+        })
+        self.save_data(data)
+        return True
+
+
+    def remove_equipment(self,studio_id, name):
+        return
+
+ 

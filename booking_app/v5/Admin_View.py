@@ -25,12 +25,16 @@ class AdminView(uv.View):
 
         ttk.Button(row1, text="Dodaj pracownika", command=self.register_employee)\
             .pack(side="left", padx=5, pady=10)
+        ttk.Button(row1, text="Dodaj studio do pracownika",command=self.add_studio_to_employee).pack(side="left", padx=5, pady=10)
+        
 
         ttk.Button(row1, text="Edytuj pracownik", command=self.edit_employee)\
             .pack(side="left", padx=5, pady=10)
 
         ttk.Button(row1, text="Usuń pracownik", command=self.remove_employee)\
             .pack(side="left", padx=5, pady=10)
+        ttk.Button(row1, text="Usuń studio dla pracownika",command=self.remove_studio_to_employee).pack(side="left", padx=5, pady=10)
+        
         ttk.Separator(self.current_view, orient=tk.HORIZONTAL)\
             .pack(fill="x", pady=5)
         
@@ -55,6 +59,25 @@ class AdminView(uv.View):
 
         # Pierwsze wczytanie danych
         self.refresh_employees()
+
+    def add_studio_to_employee(self):
+        login = simpledialog.askstring("Dodanie studia do pracownika","Nazwa użytkownika:")
+        id = simpledialog.askstring("Dodanie studia do pracownika","ID studia do dodania:")
+        if self.database.add_user_rooms(login, id):
+            messagebox.showinfo("Sukces", f"Dodano studio z ID: {id} do pracownika {login}")
+            
+        else:
+            messagebox.showerror("Błąd", "Niepoprawne ID lub login")
+
+    def remove_studio_to_employee(self):
+        login = simpledialog.askstring("Usunięcie studia pracownika","Nazwa użytkownika:")
+        id = simpledialog.askstring("Usunięcie studia pracownika","ID studia:")
+        if self.database.remove_user_rooms(login, id):
+            messagebox.showinfo("Sukces", f"Usunięto studio z ID: {id} dla pracownika {login}")
+            
+        else:
+            messagebox.showerror("Błąd", "Niepoprawne ID lub login")
+
 
     def refresh_employees(self):
         for i in self.users_tree.get_children():
@@ -122,7 +145,7 @@ class AdminView(uv.View):
         ttk.Label(row2, text="Studia").pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Dodaj studio",command=self.register_studio).pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Edytuj studio", command=self.edit_studio).pack(side="left", padx=5, pady=10)
-        ttk.Button(row2, text="Dodaj pracownika do studia").pack(side="left", padx=5, pady=10)
+        ttk.Button(row2, text="Dodaj sprzęt do studia",command=self.add_eq_to_studio).pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Usuń studio", command=self.remove_studio).pack(side="left", padx=5, pady=10)
         
         ttk.Separator(self.current_view, orient=tk.HORIZONTAL).pack(fill="x", pady=10)
@@ -146,6 +169,26 @@ class AdminView(uv.View):
 
         # Pierwsze wczytanie danych
         self.refresh_studios()
+
+    def add_eq_to_studio(self):
+        id = simpledialog.askstring("Nowe sprzęt","ID studia:")
+        if not id: return
+        name = simpledialog.askstring("Nowe sprzęt","Nazwa sprzętu:")
+        if not name: return
+        total = simpledialog.askstring("Nowe sprzęt","Ilość sprzętu:")
+        if not total: return
+
+        id_int = int(id)
+        total_int = int(total)
+        used = 0
+        if self.dataMAn.add_equipment(id_int, name, used, total_int):
+            messagebox.showinfo("Sukces", "Dodano sprzęt")
+            
+        else:
+            messagebox.showerror("Błąd", "Nie można dodać sprzętu")
+
+    def remove_eq_from_studio(self):
+        return
 
     def refresh_studios(self):
         # Czyści tabelę
