@@ -49,7 +49,7 @@ class User_Data(dm.Database_Management):
                 else:
                     return None       # złe hasło
 
-        return "User not found"
+        return False
 
     def get_user_role(self, username):
         data = self.load_data()

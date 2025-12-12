@@ -34,7 +34,9 @@ class LoginScreen(tk.Frame):
         if self.database.login_user(login, password):
             self.app.show_main(login)
         else:
+            self.app.show_login()            
             messagebox.showerror("Błąd", "Nieprawidłowe dane!")
+
 # EKRAN REJESTRACJI
 class RegisterScreen(tk.Frame):
     def __init__(self, master, app, database):
@@ -60,7 +62,9 @@ class RegisterScreen(tk.Frame):
 #screen operations
     def register(self):
         login = self.login_entry.get()
+        if not login: return
         password = self.password_entry.get()
+        if not password: return
         role = 'client'
 
         if self.database.register_user(login, password, role):
