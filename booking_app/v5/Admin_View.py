@@ -25,16 +25,12 @@ class AdminView(uv.View):
 
         ttk.Button(row1, text="Dodaj pracownika", command=self.register_employee)\
             .pack(side="left", padx=5, pady=10)
-        ttk.Button(row1, text="Dodaj studio do pracownika",command=self.add_studio_to_employee).pack(side="left", padx=5, pady=10)
-        
 
         ttk.Button(row1, text="Edytuj pracownik", command=self.edit_employee)\
             .pack(side="left", padx=5, pady=10)
 
         ttk.Button(row1, text="Usuń pracownik", command=self.remove_employee)\
             .pack(side="left", padx=5, pady=10)
-        ttk.Button(row1, text="Usuń studio dla pracownika",command=self.remove_studio_to_employee).pack(side="left", padx=5, pady=10)
-        
         ttk.Separator(self.current_view, orient=tk.HORIZONTAL)\
             .pack(fill="x", pady=5)
         
@@ -144,7 +140,7 @@ class AdminView(uv.View):
         ttk.Label(row2, text="Studia").pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Dodaj studio",command=self.register_studio).pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Edytuj studio", command=self.edit_studio).pack(side="left", padx=5, pady=10)
-        ttk.Button(row2, text="Dodaj sprzęt do studia",command=self.add_eq_to_studio).pack(side="left", padx=5, pady=10)
+        ttk.Button(row2, text="Zarządzaj sprzętem", command=self.manage_equipment).pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Usuń studio", command=self.remove_studio).pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Usuń sprzęt ze studia",command=self.remove_eq_from_studio).pack(side="left", padx=5, pady=10)
         
@@ -169,6 +165,7 @@ class AdminView(uv.View):
 
         # Pierwsze wczytanie danych
         self.refresh_studios()
+
 
     def add_eq_to_studio(self):
         id = simpledialog.askstring("Nowe sprzęt","ID studia:")
@@ -199,7 +196,6 @@ class AdminView(uv.View):
         else:
             messagebox.showerror("Błąd", "Nie można znaleźć sprzętu")
 
-
     def refresh_studios(self):
     # Czyści tabelę
         for i in self.admin_rooms_tree.get_children():
@@ -228,6 +224,7 @@ class AdminView(uv.View):
                     equipment_str
                 )
             )
+
 
     def register_studio(self):
         
@@ -286,6 +283,231 @@ class AdminView(uv.View):
 
         # jeśli pętla się zakończyła i nic nie znaleziono
         messagebox.showerror("Błąd", "Studio nie znalezione!")
+    
+    def manage_equipment(self):
+        """Manage equipment for a studio"""
+        studio_id = simpledialog.askstring("Zarządzanie sprzętem", "Podaj ID studia:")
+        if not studio_id:
+            return
+        
+        try:
+            studio_id_int = int(studio_id)
+        except ValueError:
+            messagebox.showerror("Błąd", "Nieprawidłowe ID!")
+            return
+        
+        data = self.database.load_data()
+        studios = data.get("studios", [])
+        
+        # Find studio
+        studio = None
+        for s in studios:
+            if s["id"] == studio_id_int:
+                studio = s
+                break
+        
+        if not studio:
+            messagebox.showerror("Błąd", "Studio nie znalezione!")
+            return
+        
+        # Create equipment management window
+        equipment_window = tk.Toplevel(self)
+        equipment_window.title(f"Zarządzanie sprzętem - {studio['name']}")
+        equipment_window.geometry("600x450")
+        equipment_window.grab_set()
+        
+        tk.Label(equipment_window, text=f"Studio: {studio['name']}", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        # Current equipment list (treeview)
+        tk.Label(equipment_window, text="Aktualny sprzęt:", font=("Arial", 11)).pack(pady=5)
+        
+        list_frame = tk.Frame(equipment_window)
+        list_frame.pack(fill="both", expand=True, padx=20, pady=5)
+        
+        cols = ("name", "used", "total", "available")
+        equipment_tree = ttk.Treeview(list_frame, columns=cols, show="headings", height=10)
+        equipment_tree.heading("name", text="Nazwa")
+        equipment_tree.heading("used", text="Używane")
+        equipment_tree.heading("total", text="Całkowita ilość")
+        equipment_tree.heading("available", text="Dostępne")
+        
+        equipment_tree.column("name", width=200)
+        equipment_tree.column("used", width=100)
+        equipment_tree.column("total", width=100)
+        equipment_tree.column("available", width=100)
+        
+        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=equipment_tree.yview)
+        equipment_tree.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side="right", fill="y")
+        equipment_tree.pack(side="left", fill="both", expand=True)
+        
+        # Load current equipment
+        def refresh_equipment_list():
+            equipment_tree.delete(*equipment_tree.get_children())
+            equipment_list = studio.get("equipment", [])
+            for equip in equipment_list:
+                if isinstance(equip, dict):
+                    available = equip['total'] - equip['used']
+                    equipment_tree.insert("", "end", values=(
+                        equip['name'],
+                        equip['used'],
+                        equip['total'],
+                        available
+                    ))
+                else:
+                    # Old format - convert to new format
+                    equipment_tree.insert("", "end", values=(equip, 0, 1, 1))
+        
+        refresh_equipment_list()
+        
+        # Buttons
+        button_frame = tk.Frame(equipment_window)
+        button_frame.pack(pady=10)
+        
+        def add_equipment():
+            add_window = tk.Toplevel(equipment_window)
+            add_window.title("Dodaj sprzęt")
+            add_window.geometry("350x200")
+            add_window.grab_set()
+            
+            tk.Label(add_window, text="Nazwa sprzętu:").pack(pady=5)
+            name_entry = tk.Entry(add_window, width=30)
+            name_entry.pack(pady=5)
+            
+            tk.Label(add_window, text="Całkowita ilość:").pack(pady=5)
+            total_entry = tk.Entry(add_window, width=30)
+            total_entry.pack(pady=5)
+            
+            def save_equipment():
+                name = name_entry.get().strip()
+                total_str = total_entry.get().strip()
+                
+                if not name or not total_str:
+                    messagebox.showwarning("Uwaga", "Wypełnij wszystkie pola!", parent=add_window)
+                    return
+                
+                try:
+                    total = int(total_str)
+                    if total < 1:
+                        raise ValueError
+                except ValueError:
+                    messagebox.showerror("Błąd", "Ilość musi być liczbą całkowitą większą od 0!", parent=add_window)
+                    return
+                
+                if "equipment" not in studio:
+                    studio["equipment"] = []
+                
+                # Check if equipment already exists
+                for eq in studio["equipment"]:
+                    if isinstance(eq, dict) and eq['name'] == name:
+                        messagebox.showwarning("Uwaga", "Ten sprzęt już istnieje!", parent=add_window)
+                        return
+                    elif isinstance(eq, str) and eq == name:
+                        messagebox.showwarning("Uwaga", "Ten sprzęt już istnieje!", parent=add_window)
+                        return
+                
+                studio["equipment"].append({
+                    "name": name,
+                    "used": 0,
+                    "total": total
+                })
+                self.database.save_data(data)
+                refresh_equipment_list()
+                self.refresh_studios()
+                add_window.destroy()
+                messagebox.showinfo("Sukces", "Sprzęt dodany!", parent=equipment_window)
+            
+            tk.Button(add_window, text="Zapisz", command=save_equipment, bg="green", fg="white").pack(pady=10)
+        
+        def edit_equipment():
+            selected = equipment_tree.selection()
+            if not selected:
+                messagebox.showwarning("Uwaga", "Wybierz sprzęt do edycji!", parent=equipment_window)
+                return
+            
+            item = equipment_tree.item(selected[0])
+            old_name = item['values'][0]
+            old_total = item['values'][2]
+            
+            edit_window = tk.Toplevel(equipment_window)
+            edit_window.title("Edytuj sprzęt")
+            edit_window.geometry("350x200")
+            edit_window.grab_set()
+            
+            tk.Label(edit_window, text="Nazwa sprzętu:").pack(pady=5)
+            name_entry = tk.Entry(edit_window, width=30)
+            name_entry.insert(0, old_name)
+            name_entry.pack(pady=5)
+            
+            tk.Label(edit_window, text="Całkowita ilość:").pack(pady=5)
+            total_entry = tk.Entry(edit_window, width=30)
+            total_entry.insert(0, old_total)
+            total_entry.pack(pady=5)
+            
+            def save_changes():
+                new_name = name_entry.get().strip()
+                total_str = total_entry.get().strip()
+                
+                if not new_name or not total_str:
+                    messagebox.showwarning("Uwaga", "Wypełnij wszystkie pola!", parent=edit_window)
+                    return
+                
+                try:
+                    new_total = int(total_str)
+                    if new_total < 1:
+                        raise ValueError
+                except ValueError:
+                    messagebox.showerror("Błąd", "Ilość musi być liczbą całkowitą większą od 0!", parent=edit_window)
+                    return
+                
+                # Find and update equipment
+                for eq in studio.get("equipment", []):
+                    if isinstance(eq, dict) and eq['name'] == old_name:
+                        eq['name'] = new_name
+                        eq['total'] = new_total
+                        # Make sure used doesn't exceed new total
+                        if eq['used'] > new_total:
+                            eq['used'] = new_total
+                        break
+                
+                self.database.save_data(data)
+                refresh_equipment_list()
+                self.refresh_studios()
+                edit_window.destroy()
+                messagebox.showinfo("Sukces", "Sprzęt zaktualizowany!", parent=equipment_window)
+            
+            tk.Button(edit_window, text="Zapisz", command=save_changes, bg="green", fg="white").pack(pady=10)
+        
+        def remove_equipment():
+            selected = equipment_tree.selection()
+            if not selected:
+                messagebox.showwarning("Uwaga", "Wybierz sprzęt do usunięcia!", parent=equipment_window)
+                return
+            
+            item = equipment_tree.item(selected[0])
+            equipment_name = item['values'][0]
+            
+            confirm = messagebox.askyesno("Potwierdzenie", f"Czy na pewno chcesz usunąć '{equipment_name}'?", parent=equipment_window)
+            if not confirm:
+                return
+            
+            # Remove equipment
+            equipment_list = studio.get("equipment", [])
+            studio["equipment"] = [
+                eq for eq in equipment_list 
+                if not (isinstance(eq, dict) and eq['name'] == equipment_name or eq == equipment_name)
+            ]
+            
+            self.database.save_data(data)
+            refresh_equipment_list()
+            self.refresh_studios()
+            messagebox.showinfo("Sukces", "Sprzęt usunięty!", parent=equipment_window)
+        
+        ttk.Button(button_frame, text="Dodaj sprzęt", command=add_equipment).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Edytuj wybrany", command=edit_equipment).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Usuń wybrany", command=remove_equipment).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Zamknij", command=equipment_window.destroy).pack(side="left", padx=5)
+    
     #-------------edit-reservations----------------------
     def build_reservation_manage_screen(self):
         self.clear_view()
@@ -305,7 +527,7 @@ class AdminView(uv.View):
         
         list_frame = tk.Frame(self.current_view)
         list_frame.pack(fill="both", expand=True, padx=5, pady=(5,0))
-        cols = ("id", "studio_id", "studio_name", "username", "date", "time_from", "time_to", "status")
+        cols = ("id", "studio_id", "studio_name", "username", "date", "time_from", "time_to", "equipment", "status")
         self.reservations_tree = ttk.Treeview(list_frame, columns=cols, show="headings", height=8)
         for c in cols:
             self.reservations_tree.heading(c, text=c)
@@ -336,6 +558,19 @@ class AdminView(uv.View):
         
         for r in reservations:
             studio_name = studio_map.get(r.get("studio_id"), "Unknown")
+            equipment = r.get("equipment", [])
+            
+            # Format equipment display
+            if equipment:
+                if isinstance(equipment[0], dict):
+                    # New format with quantities
+                    equipment_str = ", ".join([f"{eq['name']} x{eq['quantity']}" for eq in equipment])
+                else:
+                    # Old format: list of strings
+                    equipment_str = ", ".join(equipment)
+            else:
+                equipment_str = "Brak"
+                
             self.reservations_tree.insert("", "end", values=(
                 r.get("id", ""),
                 r.get("studio_id", ""),
@@ -344,6 +579,7 @@ class AdminView(uv.View):
                 r.get("date", ""),
                 r.get("time_from", ""),
                 r.get("time_to", ""),
+                equipment_str,
                 r.get("status", "")
             ))
 
