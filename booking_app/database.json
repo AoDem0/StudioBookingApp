@@ -1,0 +1,25 @@
+{
+    "users": [
+        {
+            "username": "admin",
+            "password_hash": "fb9dcd8783bba0f142c9f1f5a2275654$3d1625b279356a54e5ed302407974cbb422d1d1fc446c69ecb89f3fce7069f5c",
+            "role": "admin",
+            "managed_rooms": []
+        },
+        {
+            "username": "nowak",
+            "password_hash": "63efc951cb6a43433b6cc9162697f95d$ca0d838fcab7fdd4681b4672a0e1b336b6c350422451537fcb55b370ea01cf43",
+            "role": "employee",
+            "managed_rooms": []
+        }
+    ],
+    "studios": [
+        {
+            "id": 1,
+            "name": "Crazy Beats",
+            "city": "krakow",
+            "price_for_h": "2000",
+            "equipment": []
+        }
+    ]
+}
