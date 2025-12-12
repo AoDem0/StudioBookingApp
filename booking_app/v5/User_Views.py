@@ -502,4 +502,32 @@ class EmployeeView(View):
     def __init__(self, master, app, database, username):
         super().__init__(master, app, database, username)
         self.build_profile_screen()
+
+    def build_client_nav(self):
+        self.nav = tk.Frame(self, bg="lightblue", height=60)
+        self.nav.pack(side="top", fill="x")
+        self.nav.pack_propagate(False)
+
+        tk.Button(
+            self.nav,
+            text="Profil",
+            command=self.build_profile_screen,
+            width=20
+        ).pack(side="left", padx=5, pady=10)
+
+
+        tk.Button(
+            self.nav,
+            text="Moje studia",
+            command=self.build_my_reservations_screen,
+            width=20
+        ).pack(side="left", padx=5, pady=10)
+        tk.Button(
+            self.nav,
+            text="Zarządzaj rezerwacjami",
+            command=self.build_search_screen,
+            width=20
+        ).pack(side="left", padx=5, pady=10)
+        
+    
 #-----------------admin-------------------------------------
