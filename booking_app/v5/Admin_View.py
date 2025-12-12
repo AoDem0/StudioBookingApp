@@ -78,7 +78,6 @@ class AdminView(uv.View):
         else:
             messagebox.showerror("Błąd", "Niepoprawne ID lub login")
 
-
     def refresh_employees(self):
         for i in self.users_tree.get_children():
             self.users_tree.delete(i)
@@ -147,6 +146,7 @@ class AdminView(uv.View):
         ttk.Button(row2, text="Edytuj studio", command=self.edit_studio).pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Dodaj sprzęt do studia",command=self.add_eq_to_studio).pack(side="left", padx=5, pady=10)
         ttk.Button(row2, text="Usuń studio", command=self.remove_studio).pack(side="left", padx=5, pady=10)
+        ttk.Button(row2, text="Usuń sprzęt ze studia",command=self.remove_eq_from_studio).pack(side="left", padx=5, pady=10)
         
         ttk.Separator(self.current_view, orient=tk.HORIZONTAL).pack(fill="x", pady=10)
         ttk.Label(self.current_view, text="Lista sal (wszystkie)").pack(anchor="w", padx=5)
@@ -188,20 +188,46 @@ class AdminView(uv.View):
             messagebox.showerror("Błąd", "Nie można dodać sprzętu")
 
     def remove_eq_from_studio(self):
-        return
+        id = simpledialog.askstring("Usuń sprzęt","ID studia:")
+        if not id: return
+        name = simpledialog.askstring("Usuń sprzęt","Nazwa sprzętu:")
+        if not name: return
+        id_int = int(id)
+        if self.dataMAn.remove_equipment(id_int, name):
+            messagebox.showinfo("Sukces", "Usunięto sprzęt")
+            
+        else:
+            messagebox.showerror("Błąd", "Nie można znaleźć sprzętu")
+
 
     def refresh_studios(self):
-        # Czyści tabelę
+    # Czyści tabelę
         for i in self.admin_rooms_tree.get_children():
             self.admin_rooms_tree.delete(i)
 
         # Wczytuje dane z JSON
         data = self.database.load_data()
         studios = data.get("studios", [])
+
         for s in studios:
-            # Equipment jako string, żeby wyświetlić w tabeli
-            equipment_str = ", ".join(s.get("equipment", []))
-            self.admin_rooms_tree.insert("", "end", values=(s["id"], s["name"], s["city"], s.get("price_for_h", ""), equipment_str))
+            # Equipment jako string (np. "mikrofon 0/10, Gitara 1/5")
+            equipment_list = s.get("equipment", [])
+            equipment_str = ", ".join(
+                f"{item['name']} {item['used']}/{item['total']}"
+                for item in equipment_list
+            )
+
+            self.admin_rooms_tree.insert(
+                "",
+                "end",
+                values=(
+                    s["id"],
+                    s["name"],
+                    s["city"],
+                    s.get("price_for_h", ""),
+                    equipment_str
+                )
+            )
 
     def register_studio(self):
         

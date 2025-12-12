@@ -61,7 +61,20 @@ class Studio_Data(dm.Database_Management):
         return True
 
 
-    def remove_equipment(self,studio_id, name):
-        return
+    def remove_equipment(self, studio_id, name):
+        data = self.load_data()
+        studio = next((s for s in data["studios"] if s["id"] == studio_id), None)
+        if not studio:
+            return False
+
+        # Znajdź sprzęt
+        equipment_item = next((item for item in studio["equipment"] if item["name"] == name), None)
+        if equipment_item:
+            studio["equipment"].remove(equipment_item)
+            self.save_data(data)
+            return True
+        else:
+            return False
+
 
  
