@@ -13,7 +13,15 @@
             "managed_rooms": []
         }
     ],
-    "studios": [],
+    "studios": [
+        {
+            "id": 0,
+            "name": "Bitbot",
+            "city": "Wroclaw",
+            "price_for_h": "50",
+            "equipment": []
+        }
+    ],
     "reservations": [
         {
             "id": 1,
@@ -22,6 +30,24 @@
             "date": "25-05-2052",
             "time_from": "15:50",
             "time_to": "16:50",
+            "status": "approved"
+        },
+        {
+            "id": 2,
+            "studio_id": 0,
+            "username": "pepe",
+            "date": "25-05-2003",
+            "time_from": "17:50",
+            "time_to": "20:50",
+            "status": "cancelled"
+        },
+        {
+            "id": 3,
+            "studio_id": 0,
+            "username": "pepe",
+            "date": "5-09-2005",
+            "time_from": "10:10",
+            "time_to": "20:50",
             "status": "approved"
         }
     ]
