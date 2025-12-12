@@ -5,8 +5,11 @@ class Booking_Data(dm.Database_Management):
     def __init__(self, filename="database.json"):
         super().__init__(filename)
 
-    def create_reservation(self, studio_id, username, date, time_from, time_to, status="pending"):
+    def create_reservation(self, studio_id, username, date, time_from, time_to, status="pending", equipment=None):
         """Create a new reservation"""
+        if equipment is None:
+            equipment = []
+            
         data = self.load_data()
         if "reservations" not in data:
             data["reservations"] = []
@@ -21,7 +24,8 @@ class Booking_Data(dm.Database_Management):
             "date": date,
             "time_from": time_from,
             "time_to": time_to,
-            "status": status  # pending, approved, rejected, cancelled
+            "status": status,  # pending, approved, rejected, cancelled
+            "equipment": equipment
         }
         
         data["reservations"].append(new_reservation)

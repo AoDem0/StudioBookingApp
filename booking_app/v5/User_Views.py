@@ -163,7 +163,18 @@ class ClientView(View):
             messagebox.showinfo("Brak wyników", "Nie znaleziono studiów spełniających kryteria!")
         
         for studio in filtered_studios:
-            equipment_str = ", ".join(studio.get("equipment", []))
+            # Handle both dict and string equipment formats
+            equipment_list = studio.get("equipment", [])
+            if equipment_list:
+                if isinstance(equipment_list[0], dict):
+                    # New format: list of dicts with name, used, total
+                    equipment_str = ", ".join([f"{eq['name']} ({eq['total']-eq['used']}/{eq['total']})" for eq in equipment_list])
+                else:
+                    # Old format: list of strings
+                    equipment_str = ", ".join(equipment_list)
+            else:
+                equipment_str = ""
+            
             self.user_tree.insert("", "end", values=(
                 studio["id"],
                 studio["name"],
@@ -183,10 +194,21 @@ class ClientView(View):
         studio_id = int(item['values'][0])
         studio_name = item['values'][1]
         
+        # Get studio equipment
+        data = self.database.load_data()
+        studios = data.get("studios", [])
+        studio = next((s for s in studios if s["id"] == studio_id), None)
+        
+        if not studio:
+            messagebox.showerror("Błąd", "Studio nie znalezione!")
+            return
+        
+        studio_equipment = studio.get("equipment", [])
+        
         # Create popup window for reservation details
         reservation_window = tk.Toplevel(self)
         reservation_window.title("Szczegóły rezerwacji")
-        reservation_window.geometry("400x250")
+        reservation_window.geometry("450x550")
         reservation_window.grab_set()  # Make window modal
         
         tk.Label(reservation_window, text=f"Rezerwacja: {studio_name}", font=("Arial", 14, "bold")).pack(pady=10)
@@ -197,7 +219,6 @@ class ClientView(View):
         tk.Label(date_frame, text="Data (DD-MM-YYYY):", width=20, anchor="w").pack(side="left")
         date_entry = tk.Entry(date_frame, width=20)
         date_entry.pack(side="left", padx=5)
-        # Pre-fill if filter has value
         if self.date_entry.get().strip():
             date_entry.insert(0, self.date_entry.get().strip())
         
@@ -207,7 +228,6 @@ class ClientView(View):
         tk.Label(time_from_frame, text="Godzina od (HH:MM):", width=20, anchor="w").pack(side="left")
         time_from_entry = tk.Entry(time_from_frame, width=20)
         time_from_entry.pack(side="left", padx=5)
-        # Pre-fill if filter has value
         if self.time_from_entry.get().strip():
             time_from_entry.insert(0, self.time_from_entry.get().strip())
         
@@ -217,9 +237,67 @@ class ClientView(View):
         tk.Label(time_to_frame, text="Godzina do (HH:MM):", width=20, anchor="w").pack(side="left")
         time_to_entry = tk.Entry(time_to_frame, width=20)
         time_to_entry.pack(side="left", padx=5)
-        # Pre-fill if filter has value
         if self.time_to_entry.get().strip():
             time_to_entry.insert(0, self.time_to_entry.get().strip())
+        
+        # Equipment selection
+        ttk.Separator(reservation_window, orient=tk.HORIZONTAL).pack(fill="x", pady=10)
+        tk.Label(reservation_window, text="Dodatkowy sprzęt:", font=("Arial", 11, "bold")).pack(pady=5)
+        
+        equipment_frame = tk.Frame(reservation_window)
+        equipment_frame.pack(pady=5, padx=20, fill="both", expand=True)
+        
+        # Create spinboxes for studio equipment
+        equipment_spinboxes = {}
+        if studio_equipment:
+            canvas = tk.Canvas(equipment_frame, height=180)
+            scrollbar = ttk.Scrollbar(equipment_frame, orient="vertical", command=canvas.yview)
+            scrollable_frame = tk.Frame(canvas)
+            
+            scrollable_frame.bind(
+                "<Configure>",
+                lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+            )
+            
+            canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+            canvas.configure(yscrollcommand=scrollbar.set)
+            
+            for equip in studio_equipment:
+                if isinstance(equip, dict):
+                    # New format: dict with name, used, total
+                    equip_name = equip['name']
+                    available = equip['total'] - equip['used']
+                    if available > 0:
+                        row_frame = tk.Frame(scrollable_frame)
+                        row_frame.pack(anchor="w", pady=3, fill="x")
+                        
+                        tk.Label(row_frame, text=f"{equip_name}:", width=20, anchor="w").pack(side="left")
+                        tk.Label(row_frame, text=f"(dostępne: {available})", width=15, anchor="w", fg="gray").pack(side="left")
+                        
+                        spinbox = tk.Spinbox(row_frame, from_=0, to=available, width=5)
+                        spinbox.pack(side="left", padx=5)
+                        spinbox.delete(0, tk.END)
+                        spinbox.insert(0, "0")
+                        
+                        equipment_spinboxes[equip_name] = {'spinbox': spinbox, 'max': available}
+                else:
+                    # Old format: string (treat as 1 available)
+                    row_frame = tk.Frame(scrollable_frame)
+                    row_frame.pack(anchor="w", pady=3, fill="x")
+                    
+                    tk.Label(row_frame, text=f"{equip}:", width=20, anchor="w").pack(side="left")
+                    
+                    spinbox = tk.Spinbox(row_frame, from_=0, to=1, width=5)
+                    spinbox.pack(side="left", padx=5)
+                    spinbox.delete(0, tk.END)
+                    spinbox.insert(0, "0")
+                    
+                    equipment_spinboxes[equip] = {'spinbox': spinbox, 'max': 1}
+            
+            canvas.pack(side="left", fill="both", expand=True)
+            scrollbar.pack(side="right", fill="y")
+        else:
+            tk.Label(equipment_frame, text="Brak dostępnego sprzętu w tym studiu", fg="gray").pack()
         
         def confirm_reservation():
             date = date_entry.get().strip()
@@ -230,25 +308,41 @@ class ClientView(View):
                 messagebox.showwarning("Uwaga", "Wypełnij wszystkie pola!", parent=reservation_window)
                 return
             
+            # Collect selected equipment with quantities
+            selected_equipment = []
+            for equip_name, equip_data in equipment_spinboxes.items():
+                quantity = int(equip_data['spinbox'].get())
+                if quantity > 0:
+                    selected_equipment.append({
+                        "name": equip_name,
+                        "quantity": quantity
+                    })
+            
             # Check availability
             if not self.bookingMan.check_availability(studio_id, date, time_from, time_to):
                 messagebox.showerror("Błąd", "Studio nie jest dostępne w wybranym terminie!", parent=reservation_window)
                 return
             
-            # Create reservation
+            # Create reservation with equipment
             if self.bookingMan.create_reservation(
                 studio_id, 
                 self.username, 
                 date, 
                 time_from, 
                 time_to, 
-                status="pending"
+                status="pending",
+                equipment=selected_equipment
             ):
+                equipment_info = ""
+                if selected_equipment:
+                    equip_list = [f"{eq['name']} x{eq['quantity']}" for eq in selected_equipment]
+                    equipment_info = f"\nSprzęt: {', '.join(equip_list)}"
+                
                 messagebox.showinfo(
                     "Sukces", 
                     f"Rezerwacja studia '{studio_name}' została utworzona!\n"
                     f"Data: {date}\n"
-                    f"Godziny: {time_from} - {time_to}\n"
+                    f"Godziny: {time_from} - {time_to}{equipment_info}\n"
                     f"Status: Oczekuje na zatwierdzenie",
                     parent=reservation_window
                 )
@@ -256,6 +350,12 @@ class ClientView(View):
                 self.search_studios()  # Refresh results
             else:
                 messagebox.showerror("Błąd", "Nie udało się utworzyć rezerwacji!", parent=reservation_window)
+        
+        # Buttons
+        button_frame = tk.Frame(reservation_window)
+        button_frame.pack(pady=20)
+        tk.Button(button_frame, text="Potwierdź", command=confirm_reservation, width=15, bg="green", fg="white").pack(side="left", padx=5)
+        tk.Button(button_frame, text="Anuluj", command=reservation_window.destroy, width=15).pack(side="left", padx=5)
         
         # Buttons
         button_frame = tk.Frame(reservation_window)
@@ -279,7 +379,7 @@ class ClientView(View):
         list_frame = tk.Frame(self.current_view)
         list_frame.pack(fill="both", expand=True)
         
-        cols = ("id", "studio_name", "date", "time_from", "time_to", "status")
+        cols = ("id", "studio_name", "date", "time_from", "time_to", "equipment", "status")
         self.my_reservations_tree = ttk.Treeview(list_frame, columns=cols, show="headings", height=12)
         
         self.my_reservations_tree.heading("id", text="ID")
@@ -287,14 +387,16 @@ class ClientView(View):
         self.my_reservations_tree.heading("date", text="Data")
         self.my_reservations_tree.heading("time_from", text="Od")
         self.my_reservations_tree.heading("time_to", text="Do")
+        self.my_reservations_tree.heading("equipment", text="Sprzęt")
         self.my_reservations_tree.heading("status", text="Status")
         
         self.my_reservations_tree.column("id", width=50)
-        self.my_reservations_tree.column("studio_name", width=150)
+        self.my_reservations_tree.column("studio_name", width=120)
         self.my_reservations_tree.column("date", width=100)
-        self.my_reservations_tree.column("time_from", width=80)
-        self.my_reservations_tree.column("time_to", width=80)
-        self.my_reservations_tree.column("status", width=120)
+        self.my_reservations_tree.column("time_from", width=70)
+        self.my_reservations_tree.column("time_to", width=70)
+        self.my_reservations_tree.column("equipment", width=150)
+        self.my_reservations_tree.column("status", width=100)
         
         vsb = ttk.Scrollbar(list_frame, orient="vertical", command=self.my_reservations_tree.yview)
         self.my_reservations_tree.configure(yscrollcommand=vsb.set)
@@ -330,12 +432,26 @@ class ClientView(View):
         # Display
         for r in user_reservations:
             studio_name = studio_map.get(r.get("studio_id"), "Unknown")
+            equipment = r.get("equipment", [])
+            
+            # Format equipment display
+            if equipment:
+                if isinstance(equipment[0], dict):
+                    # New format with quantities
+                    equipment_str = ", ".join([f"{eq['name']} x{eq['quantity']}" for eq in equipment])
+                else:
+                    # Old format: list of strings
+                    equipment_str = ", ".join(equipment)
+            else:
+                equipment_str = "Brak"
+                
             self.my_reservations_tree.insert("", "end", values=(
                 r.get("id"),
                 studio_name,
                 r.get("date"),
                 r.get("time_from"),
                 r.get("time_to"),
+                equipment_str,
                 r.get("status")
             ))
 
@@ -348,7 +464,7 @@ class ClientView(View):
         
         item = self.my_reservations_tree.item(selected[0])
         reservation_id = int(item['values'][0])
-        status = item['values'][5]
+        status = item['values'][6]
         
         if status == "cancelled":
             messagebox.showinfo("Info", "Ta rezerwacja jest już anulowana!")

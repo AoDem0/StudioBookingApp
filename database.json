@@ -2,28 +2,141 @@
     "users": [
         {
             "username": "admin",
-            "password_hash": "51a1d997267d8f4d517f107e7d0678be$d4624ffc31fe76569e44def9a81f40fef7e89bf3cd8a53e2fa5696a7a4566404",
+            "password_hash": "fb9dcd8783bba0f142c9f1f5a2275654$3d1625b279356a54e5ed302407974cbb422d1d1fc446c69ecb89f3fce7069f5c",
             "role": "admin",
             "managed_rooms": []
         },
         {
+            "username": "nowak",
+            "password_hash": "63efc951cb6a43433b6cc9162697f95d$ca0d838fcab7fdd4681b4672a0e1b336b6c350422451537fcb55b370ea01cf43",
+            "role": "employee",
+            "managed_rooms": [
+                1,
+                2
+            ]
+        },
+        {
+            "username": "kowalski",
+            "password_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6$1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            "role": "client",
+            "managed_rooms": []
+        },
+        {
+            "username": "client1",
+            "password_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7$234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1",
+            "role": "client",
+            "managed_rooms": []
+        },
+        {
             "username": "pepe",
-            "password_hash": "8818017a7f7138eb1b6cb09afcd7c8c8$8751d8d0086d485a6f5e0764f7e6334239dbce67690e07a31fb572fbff7f1373",
+            "password_hash": "f6ee7a1e6dc8ed95e4846e43291dd094$16c229f5be5a183606d9606a58b41ad42487d2403df8a21ee9de5e23616295f4",
             "role": "client",
             "managed_rooms": []
         }
     ],
     "studios": [
         {
-            "id": 0,
-            "name": "Bitbot",
-            "city": "Wroclaw",
-            "price_for_h": "50",
+            "id": 1,
+            "name": "Crazy Beats",
+            "city": "krakow",
+            "price_for_h": "2000",
             "equipment": [
                 {
-                    "name": "kup",
+                    "name": "mic",
+                    "used": 0,
+                    "total": 5
+                },
+                {
+                    "name": "mixer",
+                    "used": 1,
+                    "total": 3
+                },
+                {
+                    "name": "drums",
                     "used": 0,
                     "total": 2
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Bass Cave",
+            "city": "warszawa",
+            "price_for_h": "1500",
+            "equipment": [
+                {
+                    "name": "mixer",
+                    "used": 0,
+                    "total": 2
+                },
+                {
+                    "name": "bass amp",
+                    "used": 0,
+                    "total": 4
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Sound Factory",
+            "city": "gdansk",
+            "price_for_h": "1800",
+            "equipment": [
+                {
+                    "name": "mic",
+                    "used": 1,
+                    "total": 6
+                },
+                {
+                    "name": "piano",
+                    "used": 0,
+                    "total": 1
+                },
+                {
+                    "name": "drums",
+                    "used": 0,
+                    "total": 2
+                },
+                {
+                    "name": "guitar amp",
+                    "used": 0,
+                    "total": 3
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "Echo Studio",
+            "city": "krakow",
+            "price_for_h": "2500",
+            "equipment": [
+                {
+                    "name": "professional mic",
+                    "used": 0,
+                    "total": 8
+                },
+                {
+                    "name": "mixing console",
+                    "used": 0,
+                    "total": 1
+                },
+                {
+                    "name": "soundproofing",
+                    "used": 0,
+                    "total": 1
+                }
+            ]
+        },
+        {
+            "id": 0,
+            "name": "CStudio",
+            "city": "wroclaw",
+            "price_for_h": "100",
+            "equipment": [
+                {
+                    "name": "mikrofon",
+                    "used": 0,
+                    "total": 10
                 }
             ]
         }
@@ -31,30 +144,157 @@
     "reservations": [
         {
             "id": 1,
-            "studio_id": 0,
-            "username": "meow",
-            "date": "25-05-2052",
-            "time_from": "15:50",
-            "time_to": "16:50",
-            "status": "approved"
+            "studio_id": 1,
+            "username": "kowalski",
+            "date": "15-12-2025",
+            "time_from": "10:00",
+            "time_to": "12:00",
+            "status": "pending",
+            "equipment": [
+                {
+                    "name": "mic",
+                    "quantity": 2
+                },
+                {
+                    "name": "mixer",
+                    "quantity": 1
+                }
+            ]
         },
         {
             "id": 2,
-            "studio_id": 0,
-            "username": "pepe",
-            "date": "25-05-2003",
-            "time_from": "17:50",
-            "time_to": "20:50",
-            "status": "cancelled"
+            "studio_id": 2,
+            "username": "client1",
+            "date": "16-12-2025",
+            "time_from": "14:00",
+            "time_to": "16:00",
+            "status": "approved",
+            "equipment": [
+                {
+                    "name": "mixer",
+                    "quantity": 1
+                }
+            ]
         },
         {
             "id": 3,
-            "studio_id": 0,
+            "studio_id": 1,
+            "username": "kowalski",
+            "date": "17-12-2025",
+            "time_from": "09:00",
+            "time_to": "11:00",
+            "status": "approved",
+            "equipment": [
+                {
+                    "name": "mic",
+                    "quantity": 1
+                },
+                {
+                    "name": "drums",
+                    "quantity": 2
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "studio_id": 3,
+            "username": "client1",
+            "date": "18-12-2025",
+            "time_from": "15:00",
+            "time_to": "18:00",
+            "status": "pending",
+            "equipment": [
+                {
+                    "name": "piano",
+                    "quantity": 1
+                },
+                {
+                    "name": "mic",
+                    "quantity": 3
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "studio_id": 4,
+            "username": "kowalski",
+            "date": "19-12-2025",
+            "time_from": "11:00",
+            "time_to": "13:00",
+            "status": "rejected",
+            "equipment": []
+        },
+        {
+            "id": 6,
+            "studio_id": 2,
+            "username": "client1",
+            "date": "20-12-2025",
+            "time_from": "16:00",
+            "time_to": "19:00",
+            "status": "approved",
+            "equipment": [
+                {
+                    "name": "bass amp",
+                    "quantity": 2
+                },
+                {
+                    "name": "mixer",
+                    "quantity": 1
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "studio_id": 3,
+            "username": "kowalski",
+            "date": "21-12-2025",
+            "time_from": "10:00",
+            "time_to": "12:00",
+            "status": "cancelled",
+            "equipment": [
+                {
+                    "name": "guitar amp",
+                    "quantity": 1
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "studio_id": 1,
+            "username": "client1",
+            "date": "22-12-2025",
+            "time_from": "13:00",
+            "time_to": "15:00",
+            "status": "pending",
+            "equipment": [
+                {
+                    "name": "mic",
+                    "quantity": 1
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "studio_id": 3,
             "username": "pepe",
-            "date": "5-09-2005",
-            "time_from": "10:10",
-            "time_to": "20:50",
-            "status": "cancelled"
+            "date": "24-05-2005",
+            "time_from": "10:00",
+            "time_to": "20:00",
+            "status": "approved",
+            "equipment": [
+                {
+                    "name": "mic",
+                    "quantity": 1
+                },
+                {
+                    "name": "drums",
+                    "quantity": 1
+                },
+                {
+                    "name": "guitar amp",
+                    "quantity": 3
+                }
+            ]
         }
     ]
 }
