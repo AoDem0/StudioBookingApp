@@ -349,14 +349,7 @@ class ClientView(View):
                 reservation_window.destroy()
                 self.search_studios()  # Refresh results
             else:
-                messagebox.showerror("Błąd", "Nie udało się utworzyć rezerwacji!", parent=reservation_window)
-        
-        # Buttons
-        button_frame = tk.Frame(reservation_window)
-        button_frame.pack(pady=20)
-        tk.Button(button_frame, text="Potwierdź", command=confirm_reservation, width=15, bg="green", fg="white").pack(side="left", padx=5)
-        tk.Button(button_frame, text="Anuluj", command=reservation_window.destroy, width=15).pack(side="left", padx=5)
-        
+                messagebox.showerror("Błąd", "Nie udało się utworzyć rezerwacji!", parent=reservation_window)      
         # Buttons
         button_frame = tk.Frame(reservation_window)
         button_frame.pack(pady=20)

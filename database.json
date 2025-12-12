@@ -295,6 +295,29 @@
                     "quantity": 3
                 }
             ]
+        },
+        {
+            "id": 10,
+            "studio_id": 3,
+            "username": "pepe",
+            "date": "25-05-2065",
+            "time_from": "10:05",
+            "time_to": "11:10",
+            "status": "approved",
+            "equipment": [
+                {
+                    "name": "mic",
+                    "quantity": 2
+                },
+                {
+                    "name": "drums",
+                    "quantity": 1
+                },
+                {
+                    "name": "guitar amp",
+                    "quantity": 3
+                }
+            ]
         }
     ]
 }
